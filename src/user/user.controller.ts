@@ -84,6 +84,9 @@ export class UserController {
   @ApiNotFoundResponse({
     description: 'User with such id was not found!',
   })
+  @ApiBadRequestResponse({
+    description: 'Invalid convert currency API data'
+  })
   async balance(
     @Param('id') id: string,
     @Query('currency') currency: string,

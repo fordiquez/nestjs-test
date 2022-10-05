@@ -46,7 +46,11 @@ export class UserService {
     const user = await this.userModel.findById(id).exec();
     if (user) {
       if (currency) {
-        let convertedData;
+        let converted = {
+          status: null,
+          message: null,
+          data: {}
+        };
         const parsedUrl = `${convertUrl}?to=${currency}&from=${user.currency}&amount=${user.balance}`;
         const options = {
           headers: {
@@ -57,16 +61,17 @@ export class UserService {
           .get(parsedUrl, options)
           .then(({ data }) => {
             console.log(data);
-            convertedData = data;
+            converted.status = HttpStatus.OK;
+            converted.message = `User balance from ${user.currency} to ${currency} has successfully received!`;
+            converted.data = data;
           })
-          .catch(({ response }) => console.log(response));
-        return this.response(
-          HttpStatus.OK,
-          `User balance from ${user.currency} to ${currency} has successfully received!`,
-          {
-            convertedData,
-          },
-        );
+          .catch(({ response }) => {
+            console.log(response);
+            converted.status = response.status;
+            converted.message = response.statusText;
+            converted.data = response.data;
+          });
+        return this.response(converted.status, converted.message, converted.data);
       } else {
         return this.response(
           HttpStatus.OK,
